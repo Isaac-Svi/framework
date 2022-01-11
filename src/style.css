@@ -1,0 +1,10 @@
+
+.howdy {
+    display: inline-block;
+    padding: 20px;
+    background-color: #235789;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+}

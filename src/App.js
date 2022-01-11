@@ -8,19 +8,23 @@ export default class App extends Component {
 
     constructor(props) {
         super(props);
-
-        // setTimeout(() => {
-        //     this.state.a = 5;
-        // }, 1000);
     }
 
     decrement() {
         this.state.a--;
     }
 
+    increment() {
+        this.state.a++;
+    }
+
     render() {
         return `
-            <div class="howdy" id="yo" @click.stop="this.decrement()">${this.state.a}</div>
+            <div class="howdy" id="yo">
+                <button @click.stop="this.decrement()">-</button>
+                <button @click.stop="this.increment()">+</button>
+                ${this.state.a}
+            </div>
         `;
     }
 }

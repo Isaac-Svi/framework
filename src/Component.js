@@ -5,7 +5,7 @@ export default class Component {
         this.props = props;
     }
 
-    mounted() {}
-    updated() {}
-    render() {}
+    mounted() { }
+    updated() { }
+    render() { }
 }

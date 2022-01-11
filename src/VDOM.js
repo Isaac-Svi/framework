@@ -4,6 +4,7 @@ class VDOM {
     static mainComponent = null;
 
     static init(component, entryPt) {
+        VDOM.mainComponent = component;
         VDOM.makeStateReactive(component);
 
         (function setupChildren(comp = component) {
@@ -29,7 +30,7 @@ class VDOM {
                 },
                 set(newVal) {
                     state[property] = newVal;
-                    VDOM.render(component);
+                    VDOM.render(VDOM.mainComponent);
                 },
             });
         }
@@ -41,35 +42,40 @@ class VDOM {
         wrapper = wrapper.content.children[0];
 
         // setup events
-        [...new Set(wrapper.attributes)]
-            .filter((e) => e.name.startsWith('@'))
-            .forEach((event) => {
-                const [name, ...qualifiers] = event.name
-                    .replace('@', '')
-                    .split('.');
+        const setEventListeners = (wrapper) => {
+            [...new Set(wrapper.attributes)]
+                .filter((e) => e.name.startsWith('@'))
+                .forEach((event) => {
+                    const [name, ...qualifiers] = event.name
+                        .replace('@', '')
+                        .split('.');
 
-                const qualifierMap = {
-                    stop: 'stopPropagation',
-                    prevent: 'preventDefault',
-                };
+                    const qualifierMap = {
+                        stop: 'stopPropagation',
+                        prevent: 'preventDefault',
+                    };
 
-                const cb = new Function(event.value);
-                wrapper['on' + name] = (e) => {
-                    for (const q of qualifiers) {
-                        const qualifyingFunction = qualifierMap[q];
-                        e[qualifyingFunction]();
-                    }
-                    cb.bind(component)();
-                };
-            });
+                    const cb = new Function(event.value);
+                    wrapper['on' + name] = (e) => {
+                        for (const q of qualifiers) {
+                            const qualifyingFunction = qualifierMap[q];
+                            e[qualifyingFunction]();
+                        }
+                        cb.bind(component)();
+                    };
+                });
+        }
+
+        setEventListeners(wrapper)
+        for (const child of wrapper.children) {
+            setEventListeners(child)
+        }
 
         // setup children
         if (component.props.children) {
             for (const child of component.props.children) {
-                console.log(child);
                 child.$el = wrapper;
-                const el = VDOM.constructHTML(child);
-                child.$el.append(el);
+                child.$el.append(VDOM.constructHTML(child));
             }
         }
 
@@ -77,13 +83,11 @@ class VDOM {
     }
 
     static render(component) {
-        const el = VDOM.constructHTML(component);
-
         for (const child of component.$el.children) {
             child.remove();
         }
 
-        component.$el.append(el);
+        component.$el.append(VDOM.constructHTML(component));
     }
 }
 
